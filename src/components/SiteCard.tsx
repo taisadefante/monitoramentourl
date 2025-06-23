@@ -244,7 +244,6 @@ export default function SiteCard({
                   )}
                 </Accordion.Body>
               </Accordion.Item>
-
               {resposta.headers && (
                 <Accordion.Item eventKey="1">
                   <Accordion.Header>🧠 Headers HTTP</Accordion.Header>
@@ -259,7 +258,6 @@ export default function SiteCard({
                   </Accordion.Body>
                 </Accordion.Item>
               )}
-
               {resposta.imagens?.length > 0 && (
                 <Accordion.Item eventKey="2">
                   <Accordion.Header>🖼️ Imagens encontradas</Accordion.Header>
@@ -285,7 +283,6 @@ export default function SiteCard({
                   </Accordion.Body>
                 </Accordion.Item>
               )}
-
               {resposta.html && (
                 <Accordion.Item eventKey="3">
                   <Accordion.Header>🧾 Código HTML</Accordion.Header>
@@ -299,7 +296,6 @@ export default function SiteCard({
                   </Accordion.Body>
                 </Accordion.Item>
               )}
-
               {resposta.screenshot && (
                 <Accordion.Item eventKey="4">
                   <Accordion.Header>📸 Screenshot</Accordion.Header>
@@ -331,13 +327,19 @@ export default function SiteCard({
                             {item.trecho}
                           </pre>
                           <p className="mb-0">
-                            <strong>📄 Arquivo:</strong> {item.arquivo || "-"}
+                            <strong>📄 Arquivo:</strong>{" "}
+                            {item.arquivo || "inline (index.html)"}
                           </p>
                           <p className="mb-0">
-                            <strong>🔢 Linha:</strong> {item.linha || "-"}
+                            <strong>🔢 Linha:</strong>{" "}
+                            {item.linha && item.linha !== -1
+                              ? item.linha
+                              : estimarLinha(item.trecho, resposta.html)}
                           </p>
                           <p className="text-success">
-                            <strong>✅ Correção:</strong> {item.sugestao}
+                            <strong>✅ Correção:</strong>{" "}
+                            {item.sugestao ||
+                              "Reescreva o código para evitar eval, atob ou Function."}
                           </p>
                         </li>
                       ))}
@@ -345,7 +347,8 @@ export default function SiteCard({
                     <p className="text-muted small">
                       ⚠️ Estes códigos podem estar fazendo o Google bloquear seu
                       site. Verifique scripts externos, plugins,
-                      redirecionamentos e iframes.
+                      redirecionamentos e iframes. Remova ou substitua trechos
+                      perigosos e atualize plugins.
                     </p>
                   </Accordion.Body>
                 </Accordion.Item>
@@ -390,6 +393,7 @@ export default function SiteCard({
               </Button>
             </>
           )}
+
           <Button variant="outline-dark" onClick={fechar}>
             Fechar
           </Button>
@@ -407,6 +411,13 @@ function renderField(label: string, value: any, descricao: string) {
       <small>{descricao}</small>
     </p>
   );
+}
+
+function estimarLinha(trecho: string, html: string): number | string {
+  if (!html || !trecho) return "-";
+  const linhas = html.split(/\r?\n/);
+  const idx = linhas.findIndex((l) => l.includes(trecho.trim().slice(0, 30)));
+  return idx !== -1 ? idx + 1 : "-";
 }
 
 function statusColor(status?: string) {
