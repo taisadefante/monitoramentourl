@@ -1,0 +1,42 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Site {
+  id             String         @id @default(cuid())
+  url            String
+  nome           String
+  ultimoCheck    DateTime?
+  status         String?        // 'ok', 'erro', 'alterado'
+  hashAtual      String?
+  criadoEm       DateTime       @default(now())
+
+  verificacoes   Verificacao[]  // Histórico de verificações
+}
+
+model Verificacao {
+  id                   String   @id @default(uuid())
+  siteId               String
+  site                 Site     @relation(fields: [siteId], references: [id])
+  status               String   // 'ok', 'erro', 'alterado'
+  codigo               Int      // Código HTTP (ex: 200, 404, 500)
+  mensagem             String?  // Descrição do resultado ou erro
+  hash                 String?  // Hash do conteúdo HTML
+  tempoCarregamentoMs  Int?     // Tempo de carregamento em milissegundos
+  temHttps             Boolean? // HTTPS habilitado?
+  screenshot           String?  // Caminho do screenshot salvo
+  criadoEm             DateTime @default(now())
+
+  // Campos estendidos
+  tamanhoHtmlKb        Int?     // Tamanho do HTML analisado em KB
+  totalImagens         Int?     // Quantidade de <img>
+  totalLinks           Int?     // Quantidade de <a>
+  scoreSeguranca       String?  // bom, médio, ruim
+  scoreSeo             String?  // bom, médio, ruim
+  erroSeo              String?  // Mensagem de erro ao analisar SEO
+}
